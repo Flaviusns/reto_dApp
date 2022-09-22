@@ -19,6 +19,8 @@ node_modules
 /build
 
 /target
+/contract/target
+/integration-tests/target
 
 # misc
 .DS_Store

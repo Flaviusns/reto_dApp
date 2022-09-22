@@ -1,7 +1,7 @@
 [package]
-name = "hello_near"
+name = "rifa_concursos"
 version = "1.0.0"
-authors = ["Near Inc <hello@near.org>"]
+authors = ["Equipo 4 Reto dApp Platzi"]
 edition = "2021"
 
 [lib]
