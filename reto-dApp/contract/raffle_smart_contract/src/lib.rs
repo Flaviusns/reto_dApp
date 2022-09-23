@@ -85,7 +85,27 @@ impl PubRaffle {
         }
         env::log_str("The Raffle is still open to participate :)")
     }
+    #[payable]
+    pub fn participate(&mut self) -> bool{
+        assert!(
+            env::attached_deposit() >= *&self.raffle.min_entry_price as u128,
+            "The raffle minimum entry price is not reach"
+        );
+
+        //If the amount is reached, and the prize is different from 0, add the sender account to the ruffle and send the money
+        if self.raffle.prize==0 {//Already closed
+            env::log_str("Raffle closed");
+            return false;
+        }
+        let new_participants = &mut self.raffle.participants;
+        let mut signer_account = vec![env::signer_account_id()];
+        new_participants.append(&mut signer_account);
+        let acc : AccountId = self.raffle.created_by.parse().unwrap();
+        Promise::new(acc).transfer(env::attached_deposit());
+
+        true
+    }
     
-    //To Do: Close the contract and send the price to the winner or return everything back to the owners 
+    //To Do: Close the contract and send the price to the winner or return everything back to the owners
 }
 
