@@ -1,0 +1,2 @@
+near dev-deploy target/wasm32-unknown-unknown/release/raffle_smart_contract.wasm
+near call $CONTRATO create_raffle '{"min_entry_price": "1", "min_participants": "1", "prize": "1", "open_days":"2"}' --accountId flaviusstan.testnet
