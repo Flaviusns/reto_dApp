@@ -1,7 +1,6 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::Vector;
+use near_sdk::collections::{UnorderedMap,Vector};
 use near_sdk::{near_bindgen};
-use near_sdk::serde::{Deserialize,Serialize};
 use near_sdk::{env, Promise, AccountId};
 
 
@@ -10,40 +9,25 @@ const NANOSECONS_IN_DAY: u64 = 86_400_000_000_000;
 ///Private raffle data, only accesible by the pub raffle and its limited operations
 /// It contains the required information to work as a Raffle
 /// Once configurated goes to true, in new method, the structure became unmutable at all
-#[derive(Serialize, Deserialize,BorshDeserialize, BorshSerialize)]
-#[serde(crate = "near_sdk::serde")]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Raffle{
     pub id:u64,
     pub created_by: String,
     pub min_entry_price: u64,
     pub min_participants: u64,
     pub prize: u64,
-    pub participants: Vec<AccountId>,
+    pub participants: UnorderedMap<AccountId,u128>,
+    pub participants_order: Vector<AccountId>,
     pub creation_time_stamp: u64,
     pub open_days: u8,
     pub configurated: bool
 }
 
-impl Default for Raffle{
-    fn default() -> Self{
-        Raffle{
-            id:0,
-            created_by: String::new(),
-            min_entry_price: 0,
-            min_participants: 0,
-            prize: 0,
-            participants: Vec::<AccountId>::new(),
-            creation_time_stamp: 0,
-            open_days: 0,
-            configurated: false
-        }
-    }
-}
-
 
 impl Raffle{
     pub fn new(min_entry_price: u64,min_participants: u64, prize: u64, open_days: u8) -> Self{
-        Self {id: env::block_height(), created_by: env::signer_account_id().to_string(), min_entry_price, min_participants, prize, participants: Vec::<AccountId>::new(), 
+        Self {id: env::block_height(), created_by: env::signer_account_id().to_string(), min_entry_price, min_participants, prize, 
+            participants: UnorderedMap::new(b"e".to_vec()), participants_order: Vector::new(b"u".to_vec()),
             creation_time_stamp: env::block_timestamp(), open_days, configurated: true}
     }
 }
@@ -54,34 +38,34 @@ pub struct PubRaffle{
     raffle: Raffle,
 }
 
-impl Default for PubRaffle{
-    fn default() -> Self {
-        Self { raffle: Raffle::new(0, 0, 0, 0) }
-    }
-}
+impl Default for PubRaffle{ //I saw a document indicatin defualt is not recommended but it don't compile if not
+     fn default() -> Self {
+         Self { raffle: Raffle::new(0, 0, 0, 0) }
+     }
+ }
 
 #[near_bindgen]
 impl PubRaffle {
-    ///Creates a raffle if this contract doesn't have any raffle configured
-    pub fn create_raffle(&mut self,min_entry_price: u64,min_participants: u64, prize: u64, open_days: u8){
-        let raf = &self.raffle;
-        if !raf.configurated{ //Never created, create a new one
-            self.raffle = Raffle::new(min_entry_price, min_participants, prize, open_days);
-            env::log_str("Raffle created successfully")
+    ///This create the raffle, this method only can be called once
+    #[init]
+    pub fn create_raffle(min_entry_price: u64,min_participants: u64, prize: u64, open_days: u8) -> Self{
+        Self {
+            raffle: Raffle::new(min_entry_price, min_participants, prize, open_days)
         }
-        env::log_str("Raffle already created, is forbidden to create a new one")
     }
 
     ///Checks if the raffle is still open or not, if not, try to close the raffle if is
     /// not clossed already. Compare days between current day and creation day plus opened days 
     /// setted in the new raffle method
-    pub fn check_status(&self){
+    pub fn check_status(&mut self){
         let current_time = env::block_timestamp();
         let open_days = &self.raffle.open_days;
         let days_in_nanosec = NANOSECONS_IN_DAY * (*open_days as u64);
         let expire_day = &self.raffle.creation_time_stamp + days_in_nanosec;
         if current_time > expire_day {
-            env::log_str("Raffle closed")//To DO implement the close of the raffle
+            //To DO implement the close of the raffle
+            self.close_raffle();
+            return env::log_str("Raffle closed")
         }
         env::log_str("The Raffle is still open to participate :)")
     }
@@ -97,15 +81,38 @@ impl PubRaffle {
             env::log_str("Raffle closed");
             return false;
         }
-        let new_participants = &mut self.raffle.participants;
-        let mut signer_account = vec![env::signer_account_id()];
-        new_participants.append(&mut signer_account);
-        let acc : AccountId = self.raffle.created_by.parse().unwrap();
-        Promise::new(acc).transfer(env::attached_deposit());
-
+        self.raffle.participants.insert(&env::signer_account_id(), &env::attached_deposit()); //To know how much give to the price
+        //Add also the order to being able to iterate
+        self.raffle.participants_order.push(&env::signer_account_id());
+        Promise::new(env::current_account_id()).transfer(env::attached_deposit());
         true
     }
     
-    //To Do: Close the contract and send the price to the winner or return everything back to the owners
+    fn close_raffle(&mut self){
+        let raf = &mut self.raffle;
+        let len = raf.participants.len();
+        if len >= raf.min_participants.try_into().unwrap(){//the raffle can give a price
+            let current_day = env::block_timestamp();
+            let winner_index = current_day % len; //Get the winner as mod, it will be better with a random function but...
+            let winner = self.raffle.participants_order.get(winner_index);
+            match winner {
+                Some(winner)=>{
+                    //Send all the money to the winner
+                    Promise::new(winner).transfer(env::account_balance());
+                },
+                None => env::log_str("Unable to get the winner")
+            }
+        }else{
+            //Return the money to everyone and the rest to the raffle's creator
+            for part in self.raffle.participants_order.iter(){
+                let donated = &self.raffle.participants.get(&part).unwrap();
+                Promise::new(part).transfer(*donated);
+            }
+            //Then return the rest to the create by
+            let acc : AccountId = String::from(&self.raffle.created_by).parse().unwrap();
+            Promise::new(acc).transfer(env::account_balance());
+        }
+
+    }
 }
 
