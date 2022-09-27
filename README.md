@@ -11,4 +11,6 @@ Cada uno con su rama hasta los merge en los release candidate y después a la ma
 ## Comandos útiles
 
 ### Smart contract en rust
+Para añadir el target a compilar debes ejecutar `rustup target add wasm32-unknown-unknown`
 Usa `cargo build --target wasm32-unknown-unknown --release` para compilar el smart contract y sacar el `.wasm` que necesitamos para publicar
+
