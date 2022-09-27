@@ -1,72 +1,52 @@
-/*
- * Example smart contract written in RUST
- *
- * Learn more about writing NEAR smart contracts with Rust:
- * https://near-docs.io/develop/Contract
- *
- */
-
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{log, near_bindgen};
+use near_sdk::collections::UnorderedMap;
+use near_sdk::{near_bindgen};
+use near_sdk::serde::{Deserialize,Serialize};
+use near_sdk::{env, Promise, AccountId};
 
-// Define the default message
-const DEFAULT_MESSAGE: &str = "Hello";
+//const MIN_STORAGE: Balance = 1_000_000_000_000_000_000_000; //0.001Ⓝ
 
-// Define the contract structure
+#[derive(Serialize, Deserialize,BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Raffle{
+    pub id:u64,
+    pub created_by: String,
+    pub min_entry_price: u64,
+    pub min_participants: u64,
+    pub prize: String,
+    pub participants: u128,
+}
+
+impl Default for Raffle{
+    fn default() -> Self{
+        Raffle{
+            id:0,
+            created_by: String::new(),
+            min_entry_price: 0,
+            min_participants: 0,
+            prize: String::new(),
+            participants: 0,
+        }
+    }
+}
+
+impl Raffle{
+    pub fn new(min_entry_price: u64,min_participants: u64, prize: String) -> Self{
+        Self {id: env::block_height(), created_by: env::signer_account_id().to_string(), min_entry_price, min_participants, prize, participants: 0}
+    }
+}
+
+///Manager that handles all the raffles and also give its address to interact with
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct Contract {
-    message: String,
+pub struct RiffleManager{
+    raffles: UnorderedMap<u64, Raffle>
 }
 
-// Define the default, which automatically initializes the contract
-impl Default for Contract{
+impl Default for RiffleManager{
     fn default() -> Self{
-        Self{message: DEFAULT_MESSAGE.to_string()}
+        Self { raffles: UnorderedMap::new(b"e".to_vec()) }
     }
 }
 
-// Implement the contract structure
-#[near_bindgen]
-impl Contract {
-    // Public method - returns the greeting saved, defaulting to DEFAULT_MESSAGE
-    pub fn get_greeting(&self) -> String {
-        return self.message.clone();
-    }
-
-    // Public method - accepts a greeting, such as "howdy", and records it
-    pub fn set_greeting(&mut self, message: String) {
-        // Use env::log to record logs permanently to the blockchain!
-        log!("Saving greeting {}", message);
-        self.message = message;
-    }
-}
-
-/*
- * The rest of this file holds the inline tests for the code above
- * Learn more about Rust tests: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
- */
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn get_default_greeting() {
-        let contract = Contract::default();
-        // this test did not call set_greeting so should return the default "Hello" greeting
-        assert_eq!(
-            contract.get_greeting(),
-            "Hello".to_string()
-        );
-    }
-
-    #[test]
-    fn set_then_get_greeting() {
-        let mut contract = Contract::default();
-        contract.set_greeting("howdy".to_string());
-        assert_eq!(
-            contract.get_greeting(),
-            "howdy".to_string()
-        );
-    }
-}
+//Implements all the related functionalities with the manager (get, getall)
