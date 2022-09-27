@@ -20,6 +20,7 @@ pub struct Raffle {
     pub creation_time_stamp: u64,
     pub open_days: u8,
     pub configurated: bool,
+    pub closed: bool
 }
 
 impl Default for Raffle {
@@ -35,30 +36,12 @@ impl Default for Raffle {
             creation_time_stamp: 0,
             open_days: 0,
             configurated: false,
+            closed: false
         }
     }
 }
 
 impl Raffle {
-    pub fn new_default(
-        min_entry_price: u64,
-        min_participants: u64,
-        prize: u64,
-        open_days: u8,
-    ) -> Self {
-        Self {
-            id: env::block_height(),
-            created_by: env::signer_account_id().to_string(),
-            min_entry_price,
-            min_participants,
-            prize,
-            participants: UnorderedMap::new(b"e".to_vec()),
-            participants_order: vec![],
-            creation_time_stamp: 0,
-            open_days,
-            configurated: false,
-        }
-    }
     pub fn new(min_entry_price: u64, min_participants: u64, prize: u64, open_days: u8) -> Self {
         Self {
             id: env::block_height(),
@@ -71,6 +54,23 @@ impl Raffle {
             creation_time_stamp: 0,
             open_days,
             configurated: true,
+            closed: false
+        }
+    }
+
+    pub fn new_default(min_entry_price: u64, min_participants: u64, prize: u64, open_days: u8) -> Self {
+        Self {
+            id: env::block_height(),
+            created_by: env::signer_account_id().to_string(),
+            min_entry_price,
+            min_participants,
+            prize,
+            participants: UnorderedMap::new(b"e".to_vec()),
+            participants_order: vec![],
+            creation_time_stamp: 0,
+            open_days,
+            configurated: false,
+            closed: false
         }
     }
 }
@@ -82,7 +82,6 @@ pub struct PubRaffle {
 }
 
 impl Default for PubRaffle {
-    //I saw a document indicatin defualt is not recommended but it don't compile if not
     fn default() -> Self {
         Self {
             raffle: Raffle::new_default(0, 0, 0, 0),
@@ -112,19 +111,8 @@ impl PubRaffle {
             true
         }
     }
-    // pub fn create_raffle( Init version, check with Isaac
-    //     min_entry_price: u64,
-    //     min_participants: u64,
-    //     prize: u64,
-    //     open_days: u8,
-    // ) -> Self {
-    //     Self {
-    //         raffle: Raffle::new(min_entry_price, min_participants, prize, open_days),
-    //     }
-    // }
-    // pub fn create_raffle(&mut self, min_entry_price: u64,min_participants: u64, prize: u64, open_days: u8){
-    //     self.raffle = Raffle::new(min_entry_price, min_participants, prize, open_days)
-    // }
+
+
     pub fn get_raffle_data(&self) {
         let current_data = format!("The raffle data is the following: created by: {}, min_entry_price:{}, min_participants: {}, price: {},configured:{}",
     self.raffle.created_by, self.raffle.min_entry_price, self.raffle.min_participants, self.raffle.prize, self.raffle.configurated);
@@ -146,7 +134,9 @@ impl PubRaffle {
         let days_in_nanosec = NANOSECONS_IN_DAY * (*open_days as u64);
         let expire_day = &self.raffle.creation_time_stamp + days_in_nanosec;
         if current_time > expire_day {
-            self.close_raffle();
+            if !self.raffle.closed{ //Is still open, we need to close it
+                self.close_raffle();
+            }
             return env::log_str("Raffle closed");
         }
         env::log_str(
@@ -182,52 +172,72 @@ impl PubRaffle {
         Promise::new(env::current_account_id()).transfer(env::attached_deposit());
         true
     }
-
+    ///Close the raffle, first checks if the min conditions was reach, if not, send back the money, else give all the money to the winner
     fn close_raffle(&mut self) {
         let raf = &mut self.raffle;
         let len = raf.participants.len();
         if len >= raf.min_participants.try_into().unwrap() {
             //the raffle can give a price
+            env::log_str("Raffle close as selecting winner");
             let current_day = env::block_timestamp();
             let winner_index = current_day % len; //Get the winner as mod, it will be better with a random function but...
             let winner = &self.raffle.participants_order[winner_index as usize];
             let winner_acc: AccountId = String::from(winner.to_string()).parse().unwrap();
+            env::log_str("He obtenido ganar");
+            let win_format = format!("Ganador: {}", &winner_acc.as_str());
+            env::log_str(&win_format);
             Promise::new(winner_acc).transfer(env::account_balance());
         } else {
             //Return the money to everyone and the rest to the raffle's creator
+            env::log_str("Raffle close as not selecting winner");
             for part in self.raffle.participants_order.iter() {
                 let donated = &self.raffle.participants.get(&part).unwrap();
                 let parti_acc: AccountId = String::from(part.to_string()).parse().unwrap();
                 Promise::new(parti_acc).transfer(*donated);
             }
+            env::log_str("For ended");
             //Then return the rest to the create by
             let acc: AccountId = String::from(&self.raffle.created_by).parse().unwrap();
             Promise::new(acc).transfer(env::account_balance());
         }
+
+        self.raffle.closed = true;
     }
 }
 
-// #[cfg(not(target_arch = "wasm32"))]
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use near_sdk::test_utils::VMContextBuilder;
-//     use near_sdk::{testing_env, VMContext};
-//     use near_sdk::{MockedBlockchain, PublicKey};
-
-//     fn get_context() {
-//         let mut builder = VMContextBuilder::new();
-//         builder.block_timestamp(1);
-//         builder.block_index(1);
-//         testing_env!(builder.build());
-//     }
-
-//     // Test 1
-//     #[test]
-//     fn get_expire_day() {
-//         get_context();
-//         let contract = PubRaffle::create_raffle(0, 1, 1, 1);
-//         assert_eq!(86400000000000, contract.get_expire_app());
-//     }
-//     // Test 2
-// }
+#[cfg(not(target_arch = "wasm32"))]
+ #[cfg(test)]
+mod tests {
+    use super::*;
+    use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::{testing_env};
+    fn get_context() {
+        let mut builder = VMContextBuilder::new();
+        builder.block_timestamp(1);
+        builder.block_index(1);
+        builder.attached_deposit(1);
+        testing_env!(builder.build());
+    }
+    // Test 1
+    #[test]
+    fn get_expire_day() {
+        get_context();
+        let mut contract: PubRaffle = PubRaffle {
+            raffle: Raffle::new(0, 0, 0, 0)
+        };
+        contract.create_raffle(1, 1, 1, 1);
+        assert_eq!(86400000000000, contract.get_expire_app());
+    }
+    // Test 2
+    #[test]
+    fn get_winner() {
+        get_context();
+        let mut contract: PubRaffle = PubRaffle {
+            raffle: Raffle::new(0, 0, 0, 0)
+        };
+        contract.create_raffle(1, 1, 1, 0);
+        contract.participate();
+        contract.check_status();
+        assert_eq!(0, contract.get_expire_app());
+    }
+}

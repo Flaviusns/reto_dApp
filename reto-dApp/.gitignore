@@ -22,6 +22,7 @@ node_modules
 /contract/target
 /integration-tests/target
 /contract/raffle_smart_contract/target
+/contract/raffle_smart_contract/neardev
 
 # misc
 .DS_Store
