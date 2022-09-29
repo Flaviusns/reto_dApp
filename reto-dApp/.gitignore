@@ -20,6 +20,7 @@ node_modules
 
 /target
 /contract/target
+/contract/neardev
 /integration-tests/target
 /contract/raffle_smart_contract/target
 /contract/raffle_smart_contract/neardev

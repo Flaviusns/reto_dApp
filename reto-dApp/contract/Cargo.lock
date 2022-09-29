@@ -832,6 +832,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "643f8f41a8ebc4c5dc4515c82bb8abd397b527fc20fd681b7c011c2aee5d44fb"
 
 [[package]]
+name = "raffle_manager"
+version = "1.0.0"
+dependencies = [
+ "near-sdk",
+ "uint",
+]
+
+[[package]]
 name = "rand"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -909,14 +917,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a415a013dd7c5d4221382329a5a3482566da675737494935cbbbcdec04662f9d"
 dependencies = [
  "smallvec",
-]
-
-[[package]]
-name = "rifa_concursos"
-version = "1.0.0"
-dependencies = [
- "near-sdk",
- "uint",
 ]
 
 [[package]]

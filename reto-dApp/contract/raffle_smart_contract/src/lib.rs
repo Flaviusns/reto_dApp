@@ -1,9 +1,13 @@
+use near_contract_standards::non_fungible_token::{Token, TokenId};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
 use near_sdk::near_bindgen;
-use near_sdk::{env, AccountId, Promise};
+use near_sdk::{env, AccountId, Gas, Promise};
+pub mod external;
+pub use crate::external::*;
 
 const NANOSECONS_IN_DAY: u64 = 86_400_000_000_000;
+pub const TGAS: u64 = 1_000_000_000_000;
 
 ///Private raffle data, only accesible by the pub raffle and its limited operations
 /// It contains the required information to work as a Raffle
@@ -14,13 +18,13 @@ pub struct Raffle {
     pub created_by: String,
     pub min_entry_price: u64,
     pub min_participants: u64,
-    pub prize: u64,
+    pub prize: String, //TokenID
     pub participants: UnorderedMap<AccountId, u128>,
     pub participants_order: Vec<AccountId>,
     pub creation_time_stamp: u64,
     pub open_days: u8,
     pub configurated: bool,
-    pub closed: bool
+    pub closed: bool,
 }
 
 impl Default for Raffle {
@@ -30,19 +34,19 @@ impl Default for Raffle {
             created_by: String::from(""),
             min_entry_price: 0,
             min_participants: 0,
-            prize: 0,
+            prize: String::from(""), //NFT smart contract account
             participants: UnorderedMap::new(b"e".to_vec()),
             participants_order: vec![],
             creation_time_stamp: 0,
             open_days: 0,
             configurated: false,
-            closed: false
+            closed: false,
         }
     }
 }
 
 impl Raffle {
-    pub fn new(min_entry_price: u64, min_participants: u64, prize: u64, open_days: u8) -> Self {
+    pub fn new(min_entry_price: u64, min_participants: u64, prize: String, open_days: u8) -> Self {
         Self {
             id: env::block_height(),
             created_by: env::signer_account_id().to_string(),
@@ -54,11 +58,16 @@ impl Raffle {
             creation_time_stamp: 0,
             open_days,
             configurated: true,
-            closed: false
+            closed: false,
         }
     }
 
-    pub fn new_default(min_entry_price: u64, min_participants: u64, prize: u64, open_days: u8) -> Self {
+    pub fn new_default(
+        min_entry_price: u64,
+        min_participants: u64,
+        prize: String,
+        open_days: u8,
+    ) -> Self {
         Self {
             id: env::block_height(),
             created_by: env::signer_account_id().to_string(),
@@ -70,7 +79,7 @@ impl Raffle {
             creation_time_stamp: 0,
             open_days,
             configurated: false,
-            closed: false
+            closed: false,
         }
     }
 }
@@ -84,7 +93,7 @@ pub struct PubRaffle {
 impl Default for PubRaffle {
     fn default() -> Self {
         Self {
-            raffle: Raffle::new_default(0, 0, 0, 0),
+            raffle: Raffle::new_default(0, 0, String::from("_"), 0),
         }
     }
 }
@@ -97,7 +106,7 @@ impl PubRaffle {
         &mut self,
         min_entry_price: u64,
         min_participants: u64,
-        prize: u64,
+        prize: String,
         open_days: u8,
     ) -> bool {
         if self.raffle.configurated {
@@ -107,11 +116,10 @@ impl PubRaffle {
             false
         } else {
             self.raffle = Raffle::new(min_entry_price, min_participants, prize, open_days);
-            env::log_str("Raffle configurated successfully");
+            env::log_str("Raffle configurated, now its waiting for being the owner of the NFT, transfer it to start the raffle");
             true
         }
     }
-
 
     pub fn get_raffle_data(&self) {
         let current_data = format!("The raffle data is the following: created by: {}, min_entry_price:{}, min_participants: {}, price: {},configured:{}",
@@ -134,7 +142,8 @@ impl PubRaffle {
         let days_in_nanosec = NANOSECONS_IN_DAY * (*open_days as u64);
         let expire_day = &self.raffle.creation_time_stamp + days_in_nanosec;
         if current_time > expire_day {
-            if !self.raffle.closed{ //Is still open, we need to close it
+            if !self.raffle.closed {
+                //Is still open, we need to close it
                 self.close_raffle();
             }
             return env::log_str("Raffle closed");
@@ -149,19 +158,20 @@ impl PubRaffle {
     }
 
     #[payable]
-    pub fn participate(&mut self) -> bool {
+    pub fn participate(&mut self) -> Promise{
         assert!(
             env::attached_deposit() >= *&self.raffle.min_entry_price as u128,
             "The raffle minimum entry price is not reach"
         );
 
-        //If the amount is reached, and the prize is different from 0, add the sender account to the ruffle and send the money
-        if self.raffle.prize == 0 {
-            //Already closed
-            env::log_str("Raffle closed");
-            return false;
-        }
-        self.raffle
+        //TODO make cross contract call to check that the owner of the NFT is this contract, if not, cancel the operation
+        let nft_account: AccountId = String::from(&self.raffle.created_by).parse().unwrap();
+        let token_data = nft_in_near::ext(nft_account)
+            .with_static_gas(Gas(5 * TGAS))
+            .nft_token(self.raffle.prize.clone());
+        return token_data.then(
+            {
+                self.raffle
             .participants
             .insert(&env::signer_account_id(), &env::attached_deposit()); //To know how much give to the price
                                                                           //Add also the order to being able to iterate
@@ -169,8 +179,10 @@ impl PubRaffle {
         self.raffle
             .participants_order
             .push(env::signer_account_id());
-        Promise::new(env::current_account_id()).transfer(env::attached_deposit());
-        true
+        Promise::new(env::current_account_id()).transfer(env::attached_deposit())
+            }
+        )
+        
     }
     ///Close the raffle, first checks if the min conditions was reach, if not, send back the money, else give all the money to the winner
     fn close_raffle(&mut self) {
@@ -206,11 +218,11 @@ impl PubRaffle {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
- #[cfg(test)]
+#[cfg(test)]
 mod tests {
     use super::*;
     use near_sdk::test_utils::VMContextBuilder;
-    use near_sdk::{testing_env};
+    use near_sdk::testing_env;
     fn get_context() {
         let mut builder = VMContextBuilder::new();
         builder.block_timestamp(1);
@@ -223,9 +235,9 @@ mod tests {
     fn get_expire_day() {
         get_context();
         let mut contract: PubRaffle = PubRaffle {
-            raffle: Raffle::new(0, 0, 0, 0)
+            raffle: Raffle::new(0, 0, String::from(""), 0),
         };
-        contract.create_raffle(1, 1, 1, 1);
+        contract.create_raffle(1, 1, String::from(""), 1);
         assert_eq!(86400000000000, contract.get_expire_app());
     }
     // Test 2
@@ -233,9 +245,9 @@ mod tests {
     fn get_winner() {
         get_context();
         let mut contract: PubRaffle = PubRaffle {
-            raffle: Raffle::new(0, 0, 0, 0)
+            raffle: Raffle::new(0, 0, String::from(""), 0),
         };
-        contract.create_raffle(1, 1, 1, 0);
+        contract.create_raffle(1, 1, String::from(""), 0);
         contract.participate();
         contract.check_status();
         assert_eq!(0, contract.get_expire_app());
