@@ -16,6 +16,7 @@ pub const TGAS: u64 = 1_000_000_000_000;
 pub struct Raffle {
     pub id: u64,
     pub created_by: String,
+    pub description: String,
     pub min_entry_price: u64,
     pub min_participants: u64,
     pub prize: String, //TokenID
@@ -33,6 +34,7 @@ impl Default for Raffle {
         Raffle {
             id: 0,
             created_by: String::from(""),
+            description: String::from(""),
             min_entry_price: 0,
             min_participants: 0,
             prize: String::from(""), //Token_Id
@@ -51,6 +53,7 @@ impl Raffle {
     pub fn new(
         min_entry_price: u64,
         min_participants: u64,
+        description: String,
         prize: String,
         nft_account: String,
         open_days: u8,
@@ -58,6 +61,7 @@ impl Raffle {
         Self {
             id: env::block_height(),
             created_by: env::signer_account_id().to_string(),
+            description,
             min_entry_price,
             min_participants,
             prize,
@@ -72,6 +76,7 @@ impl Raffle {
     }
 
     pub fn new_default(
+        description: String,
         min_entry_price: u64,
         min_participants: u64,
         prize: String,
@@ -81,6 +86,7 @@ impl Raffle {
         Self {
             id: env::block_height(),
             created_by: env::signer_account_id().to_string(),
+            description,
             min_entry_price,
             min_participants,
             prize,
@@ -104,7 +110,7 @@ pub struct PubRaffle {
 impl Default for PubRaffle {
     fn default() -> Self {
         Self {
-            raffle: Raffle::new_default(0, 0, String::from("_"), String::from("_"), 0),
+            raffle: Raffle::new_default(String::from("_"), 0, 0, String::from("_"), String::from("_"), 0),
         }
     }
 }
@@ -112,9 +118,9 @@ impl Default for PubRaffle {
 #[near_bindgen]
 impl PubRaffle {
     ///This create the raffle, this method only can be called once
-    //#[init]
     pub fn create_raffle(
         &mut self,
+        description: String,
         min_entry_price: u64,
         min_participants: u64,
         prize: String,
@@ -130,6 +136,7 @@ impl PubRaffle {
             self.raffle = Raffle::new(
                 min_entry_price,
                 min_participants,
+                description,
                 prize,
                 nft_account,
                 open_days,
@@ -174,7 +181,7 @@ impl PubRaffle {
             .as_str(),
         );
     }
-    
+
     ///This function checks if the owner of the NFT is the current account and if it is,
     /// enable the raffle to participate
     #[private] // Public - but only callable by env::current_account_id()
@@ -305,9 +312,9 @@ mod tests {
     fn get_expire_day() {
         get_context();
         let mut contract: PubRaffle = PubRaffle {
-            raffle: Raffle::new(0, 0, String::from(""), String::from(""), 0),
+            raffle: Raffle::new(0, 0, String::from(""), String::from(""), String::from(""), 0),
         };
-        contract.create_raffle(1, 1, String::from(""), String::from(""), 1);
+        contract.create_raffle(String::from(""),1, 1, String::from(""), String::from(""), 1);
         assert_eq!(86400000000000, contract.get_expire_app());
     }
     // Test 2
@@ -315,9 +322,9 @@ mod tests {
     fn get_winner() {
         get_context();
         let mut contract: PubRaffle = PubRaffle {
-            raffle: Raffle::new(0, 0, String::from(""), String::from(""), 0),
+            raffle: Raffle::new(0, 0, String::from(""), String::from(""), String::from(""), 0),
         };
-        contract.create_raffle(1, 1, String::from(""), String::from(""), 0);
+        contract.create_raffle(String::from(""),1, 1, String::from(""), String::from(""), 0);
         contract.participate();
         contract.check_status();
         assert_eq!(0, contract.get_expire_app());
