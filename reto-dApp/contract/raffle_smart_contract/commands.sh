@@ -12,4 +12,4 @@ near call dev-1664622659190-79306488887267 create_raffle '{"description": "Concu
 
 near call hash_1.dev-1664622659190-79306488887267 create_raffle '{"description": "Prueba de concurso", "min_entry_price": 1, "min_participants": 1, "prize": "hash_1","nft_account":"dev-1664546003165-18085703894003", "open_days":10}' --accountId flaviusstan.testnet 
 
-1_000_000_000_000_000_000_000_000
+near view dev-1664622659190-79306488887267 get_list_raffle '{}'
