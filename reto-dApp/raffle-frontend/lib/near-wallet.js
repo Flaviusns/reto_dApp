@@ -49,6 +49,11 @@ class Wallet {
     return isSignedIn;
   }
 
+  getUserId = () => {
+    const userId = this.walletSelector?.store.getState().accounts[0].accountId;
+    return userId;
+  }
+
   // Sign-in method
   signIn = () => {
     const description = 'Please select a wallet to sign in.';

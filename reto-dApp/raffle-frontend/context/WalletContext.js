@@ -6,11 +6,16 @@ const WalletContext = createContext()
 export const WalletProvider = ({ children }) => {
     const [isStartingUp, setisLoading] = useState(true)
     const [isAuthenticated, setisAuthenticated] = useState(false)
+    const [userId, setUserId] = useState("")
 
     useEffect(() => {
         nearWallet.startUp().then((isSignedIn) => {
             setisAuthenticated(isSignedIn)
             setisLoading(false)
+            if (isSignedIn) {
+                const userId = nearWallet.getUserId()
+                setUserId(userId)
+            }
         })
     },[])
     const value = {
@@ -18,6 +23,7 @@ export const WalletProvider = ({ children }) => {
         isStartingUp: isStartingUp,
         signIn: () => nearWallet.signIn(),
         signOut: () => nearWallet.signOut(),
+        userId: userId,
     }
     return (
         <WalletContext.Provider value={value}>
