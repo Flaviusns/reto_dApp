@@ -8,11 +8,12 @@ import styles from '../styles/Home.module.css'
 export default function Home() {
     const { isStartingUp, isAuthenticated, signIn, signOut, userId } = useWallet()
     const { getRaffleList, createRaffle } = useRaffleContract()
+    const [ raggleList, setRaffleList ] = useState({})
 
     useEffect(() => {
         if (!isStartingUp) {
             getRaffleList().then((data) => {
-                console.log("data",data)
+                setRaffleList(data)
             })
         }
     },[isStartingUp])
@@ -55,6 +56,10 @@ export default function Home() {
                 </p>
             )
         }
+        <div className={styles.description}>
+            <p>Lista de raffles</p>
+            <p>{JSON.stringify(raggleList)}</p>
+        </div>
         {
             !isStartingUp && isAuthenticated && (
                 <button onClick={handleSignout}>
