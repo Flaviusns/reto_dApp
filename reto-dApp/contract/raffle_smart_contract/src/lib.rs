@@ -110,7 +110,14 @@ pub struct PubRaffle {
 impl Default for PubRaffle {
     fn default() -> Self {
         Self {
-            raffle: Raffle::new_default(String::from("_"), 0, 0, String::from("_"), String::from("_"), 0),
+            raffle: Raffle::new_default(
+                String::from("_"),
+                0,
+                0,
+                String::from("_"),
+                String::from("_"),
+                0,
+            ),
         }
     }
 }
@@ -150,6 +157,12 @@ impl PubRaffle {
         let current_data = format!("The raffle data is the following: created by: {}, min_entry_price:{}, min_participants: {}, prize: {}, NFT_owner: {}, configured:{}, closed:{}",
     self.raffle.created_by, self.raffle.min_entry_price, self.raffle.min_participants, self.raffle.prize, self.raffle.nft_account, self.raffle.configurated, self.raffle.closed);
         env::log_str(&current_data.as_str())
+    }
+
+    pub fn get_raffle(&self) -> String {
+        let current_data = format!("{{id:{}, created by: {}, description: {}, min_entry_price:{}, min_participants: {}, prize: {}, NFT_accounnt: {}, creation_time_stamp {} configured:{}, closed:{}}}",
+    self.raffle.id, self.raffle.created_by, self.raffle.description, self.raffle.min_entry_price, self.raffle.min_participants, self.raffle.prize, self.raffle.nft_account, self.raffle.creation_time_stamp, self.raffle.configurated, self.raffle.closed);
+        current_data
     }
 
     pub fn get_expire_app(&self) -> u64 {
@@ -253,7 +266,8 @@ impl PubRaffle {
             let win_format = format!("Winner: {}", &winner_acc.as_str());
             env::log_str(&win_format);
             //Transfering the NFT to the winner
-            let nft_account: AccountId = String::from(&raf.nft_account.to_string()).parse().unwrap();
+            let nft_account: AccountId =
+                String::from(&raf.nft_account.to_string()).parse().unwrap();
             nft_in_near::ext(nft_account)
                 .with_static_gas(Gas(1))
                 .with_attached_deposit(1)
@@ -312,9 +326,23 @@ mod tests {
     fn get_expire_day() {
         get_context();
         let mut contract: PubRaffle = PubRaffle {
-            raffle: Raffle::new(0, 0, String::from(""), String::from(""), String::from(""), 0),
+            raffle: Raffle::new(
+                0,
+                0,
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                0,
+            ),
         };
-        contract.create_raffle(String::from(""),1, 1, String::from(""), String::from(""), 1);
+        contract.create_raffle(
+            String::from(""),
+            1,
+            1,
+            String::from(""),
+            String::from(""),
+            1,
+        );
         assert_eq!(86400000000000, contract.get_expire_app());
     }
     // Test 2
@@ -322,9 +350,23 @@ mod tests {
     fn get_winner() {
         get_context();
         let mut contract: PubRaffle = PubRaffle {
-            raffle: Raffle::new(0, 0, String::from(""), String::from(""), String::from(""), 0),
+            raffle: Raffle::new(
+                0,
+                0,
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                0,
+            ),
         };
-        contract.create_raffle(String::from(""),1, 1, String::from(""), String::from(""), 0);
+        contract.create_raffle(
+            String::from(""),
+            1,
+            1,
+            String::from(""),
+            String::from(""),
+            0,
+        );
         contract.participate();
         contract.check_status();
         assert_eq!(0, contract.get_expire_app());
