@@ -1,5 +1,5 @@
 [package]
-name = "rifa_concursos"
+name = "raffle_manager"
 version = "1.0.0"
 authors = ["Equipo 4 Reto dApp Platzi"]
 edition = "2021"
