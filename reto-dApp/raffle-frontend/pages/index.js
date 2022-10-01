@@ -9,6 +9,11 @@ export default function Home() {
     const { isStartingUp, isAuthenticated, signIn, signOut, userId } = useWallet()
     const { getRaffleList, createRaffle } = useRaffleContract()
     const [ raggleList, setRaffleList ] = useState({})
+    const [ formData, setFormData ] = useState({
+        min_entry_price:1,
+        min_participants:1,
+        prize:"hash_1",
+    })
 
     useEffect(() => {
         if (!isStartingUp) {
@@ -24,6 +29,11 @@ export default function Home() {
 
     const handleSignout = () => {
         signOut()
+    }
+
+    const handleCreateRaffle = (e) => {
+        e.preventDefault()
+        createRaffle(formData.min_entry_price, formData.min_participants, formData.prize)
     }
 
   return (
@@ -51,9 +61,34 @@ export default function Home() {
                     </p>
                 </button>
             ) : (
-                <p className={styles.description} >
-                    Hola tu accountId es: {userId}
-                </p>
+                <>
+                    <p className={styles.description} >
+                        Hola tu accountId es: {userId}
+                    </p>
+                    <form style={{diplay: "flex", flexDirection:"column"}}>
+                        <div>
+                            <label>
+                                min_entry_price:
+                                <input type="number" value={formData.min_entry_price} onChange={(e) => setFormData((prev) => ({...prev, min_entry_price: e.target.value}))}/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                min_participants:
+                                <input type="number" value={formData.min_participants} onChange={(e) => setFormData((prev) => ({...prev, min_participants: e.target.value}))}/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                prize (nft hash):
+                                <input type="text" placeholder="NFT hash" value={formData.prize} onChange={(e) => setFormData((prev) => ({...prev, prize: e.target.value}))}/>
+                            </label>
+                        </div>
+                        <button onClick={handleCreateRaffle}>
+                            Create raffle
+                        </button>
+                    </form>
+                </>
             )
         }
         <div className={styles.description}>
