@@ -174,7 +174,7 @@ impl PubRaffle {
     ///Checks if the raffle is still open or not, if not, try to close the raffle if is
     /// not clossed already. Compare days between current day and creation day plus opened days
     /// setted in the new raffle method
-    pub fn check_status(&mut self) {
+    pub fn check_status(&mut self)->String {
         let current_time = env::block_timestamp();
         let open_days = &self.raffle.open_days;
         let days_in_nanosec = NANOSECONS_IN_DAY * (*open_days as u64);
@@ -184,7 +184,8 @@ impl PubRaffle {
                 //Is still open, we need to close it
                 self.close_raffle();
             }
-            return env::log_str("Raffle closed");
+            env::log_str("Raffle closed");
+            return String::from("Raffle closed");
         }
         env::log_str(
             format!(
@@ -193,6 +194,7 @@ impl PubRaffle {
             )
             .as_str(),
         );
+        return String::from("The Raffle is still open to participate");
     }
 
     ///This function checks if the owner of the NFT is the current account and if it is,
@@ -229,12 +231,12 @@ impl PubRaffle {
     }
 
     #[payable]
-    pub fn participate(&mut self) {
-        assert!(
-            env::attached_deposit() >= *&self.raffle.min_entry_price as u128 && !*&self.raffle.closed,
-            "The raffle minimum entry price is not reach or the raffle is not open to participate in it"
-        );
-        if !&self.raffle.closed {
+    pub fn participate(&mut self)-> bool {//bool
+
+        if env::attached_deposit() >= *&self.raffle.min_entry_price as u128 && !*&self.raffle.closed{
+            return false;
+        }
+        else if !&self.raffle.closed {
             self.raffle
                 .participants
                 .insert(&env::signer_account_id(), &env::attached_deposit()); //To know how much give to the price
@@ -245,7 +247,11 @@ impl PubRaffle {
                 .push(env::signer_account_id());
             env::log_str("You has been added as a participant into this raffle");
             Promise::new(env::current_account_id()).transfer(env::attached_deposit());
+            return true;
+        }else{
+            return false;
         }
+        
     }
 
     pub fn get_participants(&self) -> Vec<AccountId> {
@@ -287,6 +293,7 @@ impl PubRaffle {
             //Then return the rest to the create by
             let acc: AccountId = String::from(&self.raffle.created_by).parse().unwrap();
             Promise::new(acc).transfer(env::account_balance());
+            //Todo devolver ownership del NFT
         }
 
         self.raffle.closed = true;
