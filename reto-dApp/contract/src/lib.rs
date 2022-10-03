@@ -14,8 +14,10 @@ pub struct Raffle {
     pub description: String,
     pub min_entry_price: u64,
     pub min_participants: u64,
+    pub nft_account: String,
     pub prize: String,
     pub account: String,
+    pub open_days: u8
 }
 
 impl Default for Raffle {
@@ -25,8 +27,10 @@ impl Default for Raffle {
             description: String::new(),
             min_entry_price: 0,
             min_participants: 0,
+            nft_account: String::new(),
             prize: String::new(),
-            account: String::new()
+            account: String::new(),
+            open_days: 0
         }
     }
 }
@@ -37,15 +41,19 @@ impl Raffle {
         min_entry_price: u64,
         min_participants: u64,
         prize: String,
+        nft_account: String,
         account: String,
+        open_days: u8
     ) -> Self {
         Self {
             description,
             created_by: env::signer_account_id().to_string(),
             min_entry_price,
             min_participants,
+            nft_account,
             prize,
-            account
+            account,
+            open_days
         }
     }
 }
@@ -73,25 +81,27 @@ impl RiffleManager {
     }
     ///Create a raffle as lock contract and returns the contract address to interact with
     #[payable]
-    pub fn create_raffle(
+    pub fn create_raffle(//10 Near mínimo
         &mut self,
         description: String,
         min_entry_price: u64,
         min_participants: u64,
-        prize: String
+        nft_account: String,
+        prize: String,
+        open_days: u8,
     ) -> String {
         assert!(
             env::attached_deposit() >= (10*YOCTO_MIN),
             "The raffle minimum entry price is not reach or the raffle is not open to participate in it"
         );
         let account_id = prize.clone() + "." + &env::current_account_id().to_string();
-        let raffle = Raffle::new(description, min_entry_price, min_participants, prize,account_id.clone());
+        let raffle = Raffle::new(description, min_entry_price, min_participants, nft_account,prize,account_id.clone(),open_days);
         Promise::new(account_id.parse().unwrap())
             .create_account()
             .transfer(env::attached_deposit())
             .deploy_contract(RAFFLE_CODE.to_vec());
         self.raffles.insert(&raffle.prize, &raffle);
         env::log_str("Raffle created successfully");
-        account_id
+        account_id //hash.cuentamanager.testnet
     }
 }
