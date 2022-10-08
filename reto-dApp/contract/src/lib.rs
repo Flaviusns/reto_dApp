@@ -95,6 +95,7 @@ impl RiffleManager {
             "The raffle minimum entry price is not reach or the raffle is not open to participate in it"
         );
         let account_id = prize.clone() + "." + &env::current_account_id().to_string();
+        env::log_str(account_id.clone().as_str());
         let raffle = Raffle::new(description, min_entry_price, min_participants, nft_account,prize,account_id.clone(),open_days);
         Promise::new(account_id.parse().unwrap())
             .create_account()
