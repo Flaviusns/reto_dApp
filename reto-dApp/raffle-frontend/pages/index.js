@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useRaffleContract } from '../context/ContractContext'
 import { useWallet } from '../context/WalletContext'
@@ -12,13 +11,19 @@ export default function Home() {
     const [ formData, setFormData ] = useState({
         min_entry_price:1,
         min_participants:1,
-        prize:"hash_1",
+        prize:"test_hash",
+        description: "test_hash",
+        nft_account: "test_hash",
+        open_days:1,
     })
 
     useEffect(() => {
         if (!isStartingUp) {
             getRaffleList().then((data) => {
                 setRaffleList(data)
+            })
+            .catch((error) => {
+                console.error(error)
             })
         }
     },[isStartingUp])
@@ -33,7 +38,21 @@ export default function Home() {
 
     const handleCreateRaffle = (e) => {
         e.preventDefault()
-        createRaffle(formData.min_entry_price, formData.min_participants, formData.prize)
+        const createRaffleArgs = {
+            description: "test raffle",
+            min_entry_price: formData.min_entry_price,
+            min_participants: formData.min_participants,
+            prize: formData.prize,
+            nft_account: "",
+            open_days: 1,
+        }
+        createRaffle(createRaffleArgs)
+        .then((data) => {
+            console.log(data)
+        })
+        .catch((error) => {
+            console.error(error)
+        })
     }
 
   return (
@@ -82,6 +101,24 @@ export default function Home() {
                             <label>
                                 prize (nft hash):
                                 <input type="text" placeholder="NFT hash" value={formData.prize} onChange={(e) => setFormData((prev) => ({...prev, prize: e.target.value}))}/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                description:
+                                <input type="text" placeholder="description" value={formData.description} onChange={(e) => setFormData((prev) => ({...prev, description: e.target.value}))}/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                nft_account:
+                                <input type="text" placeholder="nft_account" value={formData.nft_account} onChange={(e) => setFormData((prev) => ({...prev, nft_account: e.target.value}))}/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                open_days:
+                                <input type="number" value={formData.open_days} onChange={(e) => setFormData((prev) => ({...prev, open_days: e.target.value}))}/>
                             </label>
                         </div>
                         <button onClick={handleCreateRaffle}>

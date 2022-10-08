@@ -1,6 +1,9 @@
 import nearWallet from "../lib/near-wallet";
+import { utils } from 'near-api-js';
 
-const CONTRACT_ID = "dev-1664448823156-51379824713049"
+const CONTRACT_ID = "subcuenta.flaviusstan.testnet"
+const nearRequiredForContractCall = "10" //NEAR
+const amountInYocto = utils.format.parseNearAmount(nearRequiredForContractCall);
 
 class RaffleContract {
     contractId;
@@ -15,13 +18,8 @@ class RaffleContract {
       return await this.wallet.viewMethod({ contractId: this.contractId, method: 'get_list_raffle' });
     }
   
-    createRaffle = async (min_entry_price, min_participants, prize) => {
-        const methodArgs = {
-            min_entry_price, 
-            min_participants, 
-            prize
-        }
-      return await this.wallet.callMethod({ contractId: this.contractId, method: 'create_raffle', args: methodArgs });
+    createRaffle = async (methodArgs) => {
+      return await this.wallet.callMethod({ contractId: this.contractId, method: 'create_raffle', args: methodArgs, deposit: amountInYocto });
     }
 }
 
