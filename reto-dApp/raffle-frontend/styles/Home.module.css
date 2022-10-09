@@ -199,3 +199,12 @@
     filter: invert(1);
   }
 }
+
+.transactionResult {
+    display: flex;
+    background-color: var(--main-dark-blue);
+    border: 1px solid var(--main-grey);
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.1rem 1rem rgba(20, 29, 55, 0.15);
+}

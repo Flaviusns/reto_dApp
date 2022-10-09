@@ -2,13 +2,17 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { useRaffleContract } from "../context/ContractContext";
 import { useWallet } from "../context/WalletContext";
+import { RaffleContract } from "../lib/RaffleContract";
 import styles from "../styles/Home.module.css";
+import { useRouter } from 'next/router'
 
 export default function Home() {
-  const { isStartingUp, isAuthenticated, signIn, signOut, userId } =
+    const router = useRouter()
+  const { isStartingUp, isAuthenticated, signIn, signOut, userId, wallet, getTransactionResult } =
     useWallet();
   const { getRaffleList, createRaffle } = useRaffleContract();
-  const [raffleList, setRaffleList] = useState({});
+  const [transactionResult, setTransactionResult] = useState(false)
+  const [raffleList, setRaffleList] = useState([]);
   const [formData, setFormData] = useState({
     min_entry_price: 1,
     min_participants: 1,
@@ -19,10 +23,20 @@ export default function Home() {
   });
 
   useEffect(() => {
+    const { query } = router
+    if (query.transactionHashes) {
+        getTransactionResult(query.transactionHashes)
+        .then((value) => setTransactionResult({value: value}))
+        .catch((error) => console.error("error", error))
+    }
+  }, [])
+
+  useEffect(() => {
     if (!isStartingUp) {
       getRaffleList()
         .then((data) => {
-          setRaffleList(data);
+          const raffleData = data.map(([hash, item]) => item)
+          setRaffleList(raffleData);
         })
         .catch((error) => {
           console.error(error);
@@ -57,6 +71,11 @@ export default function Home() {
       });
   };
 
+  const handleParticipate = ( contractId, min_entry_prize ) => {
+    const raffleContract = new RaffleContract({contractId: contractId, walletToUse: wallet, min_entry_prize: min_entry_prize.toString()})
+    return raffleContract.participate()
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -89,6 +108,11 @@ export default function Home() {
               <button onClick={handleSignout} className={styles.logout}>
                 Log out
               </button>
+              {
+                transactionResult ? (
+                    <div className={styles.transactionResult}>Transaction Result: {transactionResult.value ? "Successful" : "Failed"}</div>
+                ) : null
+              }
               <p className={styles.description}>Welcome {userId}</p>
               <form id={styles.createRaffleForm}>
                 <leyend className={styles.subtitle}>
@@ -199,9 +223,20 @@ export default function Home() {
                   buy yout ticket.
                 </p>
                 <ul>
-                  <li>Raffle Name 1</li>
-                  <li>Raffle Name 2</li>
-                  {/*raffleList.map((name) => <li>{name}</li>)*/}
+                    {
+                        raffleList.map((raffle) => (
+                            <li>
+                                <h2>{raffle.description}</h2>
+                                <p>Account: {raffle.account}</p>
+                                <p>Prize: {raffle.prize}</p>
+                                <p>Created by: {raffle.created_by}</p>
+                                <p>Entry price: {raffle.min_entry_price} near</p>
+                                <p>Minimum Participants: {raffle.min_participants}</p>
+                                <p>Open days: {raffle.open_days}</p>
+                                <button onClick={() => handleParticipate(raffle.account, raffle.min_entry_price)}>Participate</button>
+                            </li>
+                        ))
+                    }
                 </ul>
               </div>
             </>
