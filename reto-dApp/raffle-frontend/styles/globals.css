@@ -1,9 +1,25 @@
+:root {
+  --main-white: white;
+  --main-black: #141d37;
+  --main-gray: #737373;
+  --main-dark-blue: #085fce;
+  --main-light-blue: #3de2ff;
+}
+
 html,
 body {
   padding: 0;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background: rgb(8, 95, 206);
+  background: linear-gradient(
+    159deg,
+    rgba(8, 95, 206, 0.2) 0%,
+    rgba(255, 255, 255, 1) 30%,
+    rgba(255, 255, 255, 1) 60%,
+    rgba(61, 226, 255, 0.2) 100%
+  );
 }
 
 a {
@@ -13,6 +29,24 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+button {
+  font-size: 1rem;
+  color: var(--main-dark-blue);
+  border-color: var(--main-dark-blue);
+  border-radius: 3rem;
+  background-color: transparent;
+  border-width: 0.1rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+button:hover,
+button:focus,
+button:active {
+  color: white;
+  background-color: var(--main-dark-blue);
 }
 
 @media (prefers-color-scheme: dark) {
