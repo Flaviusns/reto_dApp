@@ -87,123 +87,208 @@ export default function Home() {
             <>
               <div className={styles.logo}>Charitaffle</div>
               <button onClick={handleSignout} className={styles.logout}>
-                Log out
+                Log out {userId}
               </button>
-              <p className={styles.description}>Welcome {userId}</p>
-              <form id={styles.createRaffleForm}>
-                <leyend className={styles.subtitle}>
-                  Create your Charitaffle
-                </leyend>
-                <div>
-                  <label>
-                    min_entry_price:
-                    <input
-                      type="number"
-                      value={formData.min_entry_price}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          min_entry_price: e.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label>
-                    min_participants:
-                    <input
-                      type="number"
-                      value={formData.min_participants}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          min_participants: e.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label>
-                    prize (nft hash):
-                    <input
-                      type="text"
-                      placeholder="NFT hash"
-                      value={formData.prize}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          prize: e.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label>
-                    description:
-                    <input
-                      type="text"
-                      placeholder="description"
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label>
-                    nft_account:
-                    <input
-                      type="text"
-                      placeholder="nft_account"
-                      value={formData.nft_account}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          nft_account: e.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label>
-                    open_days:
-                    <input
-                      type="number"
-                      value={formData.open_days}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          open_days: e.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                </div>
-                <button onClick={handleCreateRaffle}>
-                  Launch my Charitaffle
-                </button>
-              </form>
+              <div id={styles.createRaffleForm}>
+                <form>
+                  <leyend className={styles.subtitle}>
+                    Create your own Charitaffle
+                  </leyend>
+                  <div>
+                    <label>
+                      <span>
+                        Description:
+                        <div className={styles.tooltip}>
+                          i
+                          <span className={styles.tiptext}>
+                            Brief description of your cause and/or the prize you
+                            are raffling off.
+                          </span>
+                        </div>
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Raffle's description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <label>
+                      <span>
+                        Minimum entry price:
+                        <div className={styles.tooltip}>
+                          i
+                          <span className={styles.tiptext}>
+                            How much is the minimun price that each participant
+                            must pay for one ticket.
+                          </span>
+                        </div>
+                      </span>
+                      <input
+                        type="number"
+                        placeholder="1 NEAR"
+                        value={formData.min_entry_price}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            min_entry_price: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <label>
+                      <span>
+                        Minimum participants:
+                        <div className={styles.tooltip}>
+                          i
+                          <span className={styles.tiptext}>
+                            How many participant must buy a ticket in order to
+                            give away the NFT prize.
+                          </span>
+                        </div>
+                      </span>
+                      <input
+                        type="number"
+                        placeholder="10"
+                        value={formData.min_participants}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            min_participants: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <label>
+                      <span>
+                        NFT Prize:
+                        <div className={styles.tooltip}>
+                          i
+                          <span className={styles.tiptext}>
+                            Enter here the NFT's hash that you're givin away.
+                          </span>
+                        </div>
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="NFT hash"
+                        value={formData.prize}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            prize: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <label>
+                      <span>
+                        NFT's owner account:
+                        <div className={styles.tooltip}>
+                          i
+                          <span className={styles.tiptext}>
+                            Enter here the account that owns the NFT.
+                          </span>
+                        </div>
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="nftOwner.tesnet"
+                        value={formData.nft_account}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            nft_account: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <label>
+                      <span>
+                        Open days:
+                        <div className={styles.tooltip}>
+                          i
+                          <span className={styles.tiptext}>
+                            Enter here how many days your raffle will be open
+                            for participation.
+                          </span>
+                        </div>
+                      </span>
+                      <input
+                        type="number"
+                        placeholder="30 days"
+                        value={formData.open_days}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            open_days: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <button onClick={handleCreateRaffle}>
+                    Launch my Charitaffle
+                  </button>
+                </form>
+              </div>
 
               <div id={styles.raffleList}>
-                <h2 className={styles.subtitle}>Charitaffles in progress</h2>
+                <h2 className={styles.subtitle}>Explore active Charitaffles</h2>
                 <p>
-                  Find here the cause or prize you want to participate for and
-                  buy yout ticket.
+                  Search for the cause/prize you want to participate for and buy
+                  yout ticket.
                 </p>
                 <ul>
-                  <li>Raffle Name 1</li>
-                  <li>Raffle Name 2</li>
-                  {/*raffleList.map((name) => <li>{name}</li>)*/}
+                  {raffleList.map((item) => (
+                    <li>
+                      <div>{item[1].description}</div>
+                      <div>
+                        <span>Minimum of participants:</span>
+                        {item[1].min_participants}
+                      </div>
+                      <button>
+                        <span>Buy</span>
+                        <span>Ticket</span>
+                      </button>
+                    </li>
+                  ))}
+                  {/* List item template
+                  <li>
+                    <div>Raffle Description</div>
+                    <div>
+                      <span>Total participant:</span>10
+                    </div>
+                    <button>
+                      <span>Buy</span>
+                      <span>Ticket</span>
+                    </button>
+                  </li>
+                  */}
                 </ul>
               </div>
+              {/*
+              <div className={styles.code}>
+                {
+                  JSON.stringify(raffleList)
+                }
+              </div>
+              */}
             </>
           )
         )}
@@ -211,14 +296,17 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <p>
-          Powered by the<a
+          Powered by the
+          <a
             href="https://platzi.com/blog/animate-a-aprender-de-desarrollo-blockchain-y-aplica-a-una-de-las-100-becas-con-near-hispano/"
             target="_blank"
-          >NEAR Developer Program</a> of Platzi
-          
-          </p>
-          <p>
-          More about this project on
+          >
+            NEAR Developer Program
+          </a>{" "}
+          of Platzi
+        </p>
+        <p>
+          More info about this project on
           <a
             className={styles.github}
             href="https://github.com/Flaviusns/reto_dApp"
