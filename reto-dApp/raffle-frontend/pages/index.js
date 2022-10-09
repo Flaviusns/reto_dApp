@@ -2,13 +2,24 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { useRaffleContract } from "../context/ContractContext";
 import { useWallet } from "../context/WalletContext";
+import { RaffleContract } from "../lib/RaffleContract";
 import styles from "../styles/Home.module.css";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  const { isStartingUp, isAuthenticated, signIn, signOut, userId } =
-    useWallet();
+  const router = useRouter();
+  const {
+    isStartingUp,
+    isAuthenticated,
+    signIn,
+    signOut,
+    userId,
+    wallet,
+    getTransactionResult,
+  } = useWallet();
   const { getRaffleList, createRaffle } = useRaffleContract();
-  const [raffleList, setRaffleList] = useState({});
+  const [transactionResult, setTransactionResult] = useState(false);
+  const [raffleList, setRaffleList] = useState([]);
   const [formData, setFormData] = useState({
     min_entry_price: 1,
     min_participants: 1,
@@ -19,10 +30,20 @@ export default function Home() {
   });
 
   useEffect(() => {
+    const { query } = router;
+    if (query.transactionHashes) {
+      getTransactionResult(query.transactionHashes)
+        .then((value) => setTransactionResult({ value: value }))
+        .catch((error) => console.error("error", error));
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isStartingUp) {
       getRaffleList()
         .then((data) => {
-          setRaffleList(data);
+          const raffleData = data.map(([hash, item]) => item);
+          setRaffleList(raffleData);
         })
         .catch((error) => {
           console.error(error);
@@ -57,6 +78,15 @@ export default function Home() {
       });
   };
 
+  const handleParticipate = (contractId, min_entry_prize) => {
+    const raffleContract = new RaffleContract({
+      contractId: contractId,
+      walletToUse: wallet,
+      min_entry_prize: min_entry_prize.toString(),
+    });
+    return raffleContract.participate();
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -89,6 +119,7 @@ export default function Home() {
               <button onClick={handleSignout} className={styles.logout}>
                 Log out {userId}
               </button>
+
               <div id={styles.createRaffleForm}>
                 <form>
                   <leyend className={styles.subtitle}>
@@ -262,7 +293,14 @@ export default function Home() {
                         <span>Minimum of participants:</span>
                         {item[1].min_participants}
                       </div>
-                      <button>
+                      <button
+                        onClick={() =>
+                          handleParticipate(
+                            raffle.account,
+                            raffle.min_entry_price
+                          )
+                        }
+                      >
                         <span>Buy</span>
                         <span>Ticket</span>
                       </button>
