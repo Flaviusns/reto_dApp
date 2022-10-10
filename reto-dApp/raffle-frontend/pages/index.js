@@ -41,7 +41,7 @@ export default function Home() {
           console.error(error);
         });
     }
-  }, [isStartingUp]);
+  }, [isStartingUp, router]);
 
   const handleLogin = () => {
     signIn();
