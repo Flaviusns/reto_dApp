@@ -122,9 +122,9 @@ export default function Home() {
 
               <div id={styles.createRaffleForm}>
                 <form>
-                  <leyend className={styles.subtitle}>
+                  <h2 className={styles.subtitle}>
                     Create your own Charitaffle
-                  </leyend>
+                  </h2>
                   <div>
                     <label>
                       <span>
@@ -286,19 +286,16 @@ export default function Home() {
                   yout ticket.
                 </p>
                 <ul>
-                  {raffleList.map((item) => (
-                    <li>
-                      <div>{item[1].description}</div>
+                  {raffleList.map((item, i) => (
+                    <li key={i}>
+                      <div>{item.description}</div>
                       <div>
                         <span>Minimum of participants:</span>
-                        {item[1].min_participants}
+                        {item.min_participants}
                       </div>
                       <button
                         onClick={() =>
-                          handleParticipate(
-                            raffle.account,
-                            raffle.min_entry_price
-                          )
+                          handleParticipate(item.account, item.min_entry_price)
                         }
                       >
                         <span>Buy</span>
