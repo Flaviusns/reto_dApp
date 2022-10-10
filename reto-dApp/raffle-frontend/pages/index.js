@@ -55,12 +55,12 @@ export default function Home() {
   const handleCreateRaffle = (e) => {
     e.preventDefault();
     const createRaffleArgs = {
-      description: "test raffle",
-      min_entry_price: formData.min_entry_price,
-      min_participants: formData.min_participants,
+      description: formData.description,
+      min_entry_price: parseInt(formData.min_entry_price),
+      min_participants: parseInt(formData.min_participants),
       prize: formData.prize,
-      nft_account: "",
-      open_days: 1,
+      nft_account: formData.nft_account,
+      open_days: parseInt(formData.open_days),
     };
     createRaffle(createRaffleArgs)
       .then((data) => {
