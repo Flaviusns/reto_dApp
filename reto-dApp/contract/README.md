@@ -11,7 +11,7 @@ Then publish it and interact with it:
 ```
 near dev-deploy --wasmFile target/wasm32-unknown-unknown/release/raffle_manager.wasm
 
-near call $dev_account_put_yours create_raffle '{"description": "Concurso de prueba", "min_entry_price":1, "min_participants": 1, "nft_account":"hash_1" "prize": "hash_1", "open_days":1}' --accountId $dev_account_put_yours create_raffle --amount 10
+near call subcuenta.flaviusstan.testnet create_raffle '{"description": "Concurso demo", "min_entry_price":1, "min_participants": 1, "nft_account":"hash_3", "prize": "hash_3", "open_days":10}' --accountId flaviusstan.testnet --amount 10
 ```
 
 The amount must be higher enough to handle the lock contract, so at least 10 nears are required

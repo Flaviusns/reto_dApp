@@ -210,6 +210,7 @@ impl PubRaffle {
         } else {
             let token: Token = call_result.unwrap();
             if token.owner_id == env::current_account_id() {
+                env::log_str("The same owner id");
                 self.raffle.closed = false;
             }
             return Some(token);
@@ -233,7 +234,10 @@ impl PubRaffle {
     #[payable]
     pub fn participate(&mut self)-> bool {//bool
 
-        if env::attached_deposit() >= *&self.raffle.min_entry_price as u128 && !*&self.raffle.closed{
+        if env::attached_deposit() >= *&self.raffle.min_entry_price as u128 && *&self.raffle.closed{
+            env::log_str("Amount not reach");
+            env::log_str(env::attached_deposit().to_string().as_str());
+            env::log_str(*&self.raffle.min_entry_price.to_string().as_str());
             return false;
         }
         else if !&self.raffle.closed {
@@ -249,6 +253,7 @@ impl PubRaffle {
             Promise::new(env::current_account_id()).transfer(env::attached_deposit());
             return true;
         }else{
+            env::log_str("Else");
             return false;
         }
         
