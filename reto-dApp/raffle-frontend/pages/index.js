@@ -306,6 +306,21 @@ export default function Home() {
                       </button>
                     </li>
                   ))}
+                    <li>
+                        <div>Nuevo Raffle</div>
+                        <div>
+                            <span>Minimum of participants:</span>
+                            5
+                        </div>
+                        <button
+                            onClick={() =>
+                            handleParticipate("dev-1665423540034-14670949817966", 1)
+                            }
+                        >
+                            <span>Buy</span>
+                            <span>Ticket</span>
+                        </button>
+                    </li>
                 </ul>
               </div>
             </>
