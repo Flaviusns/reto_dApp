@@ -72,7 +72,11 @@ export default function Home() {
 
   const handleParticipate = ( contractId, min_entry_prize ) => {
     const raffleContract = new RaffleContract({contractId: contractId, walletToUse: wallet, min_entry_prize: min_entry_prize.toString()})
-    return raffleContract.participate()
+    try {
+        raffleContract.participate()   
+    } catch (error) {
+        console.log("error at participate", error)
+    }
   }
 
   return (
