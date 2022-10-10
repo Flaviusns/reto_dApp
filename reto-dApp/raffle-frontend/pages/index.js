@@ -23,16 +23,15 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const { query } = router
-    if (query.transactionHashes) {
-        getTransactionResult(query.transactionHashes)
-        .then((value) => setTransactionResult({value: value}))
-        .catch((error) => console.error("error", error))
-    }
-  }, [])
-
-  useEffect(() => {
     if (!isStartingUp) {
+        const { query } = router
+        console.log("query",query)
+        if (query.transactionHashes) {
+            console.log("query",query.transactionHashes)
+            getTransactionResult(query.transactionHashes)
+            .then((value) => setTransactionResult({value: value}))
+            .catch((error) => console.error("error", error))
+        }
       getRaffleList()
         .then((data) => {
           const raffleData = data.map(([hash, item]) => item)
