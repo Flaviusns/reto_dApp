@@ -21,12 +21,12 @@ export default function Home() {
   const [transactionResult, setTransactionResult] = useState(false);
   const [raffleList, setRaffleList] = useState([]);
   const [formData, setFormData] = useState({
-    min_entry_price: 1,
-    min_participants: 1,
-    prize: "test_hash",
-    description: "test_hash",
-    nft_account: "test_hash",
-    open_days: 1,
+    min_entry_price: Number,
+    min_participants: Number,
+    prize: String,
+    description: String,
+    nft_account: String,
+    open_days: Number,
   });
 
   useEffect(() => {
@@ -119,6 +119,12 @@ export default function Home() {
               <button onClick={handleSignout} className={styles.logout}>
                 Log out {userId}
               </button>
+              {transactionResult ? (
+                <div className={styles.transactionResult}>
+                  Transaction Result:{" "}
+                  {transactionResult.value ? "Successful" : "Failed"}
+                </div>
+              ) : null}
 
               <div id={styles.createRaffleForm}>
                 <form>
@@ -140,7 +146,6 @@ export default function Home() {
                       <input
                         type="text"
                         placeholder="Raffle's description"
-                        value={formData.description}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -165,7 +170,6 @@ export default function Home() {
                       <input
                         type="number"
                         placeholder="1 NEAR"
-                        value={formData.min_entry_price}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -190,7 +194,6 @@ export default function Home() {
                       <input
                         type="number"
                         placeholder="10"
-                        value={formData.min_participants}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -214,7 +217,6 @@ export default function Home() {
                       <input
                         type="text"
                         placeholder="NFT hash"
-                        value={formData.prize}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -238,7 +240,6 @@ export default function Home() {
                       <input
                         type="text"
                         placeholder="nftOwner.tesnet"
-                        value={formData.nft_account}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -263,7 +264,6 @@ export default function Home() {
                       <input
                         type="number"
                         placeholder="30 days"
-                        value={formData.open_days}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -303,27 +303,8 @@ export default function Home() {
                       </button>
                     </li>
                   ))}
-                  {/* List item template
-                  <li>
-                    <div>Raffle Description</div>
-                    <div>
-                      <span>Total participant:</span>10
-                    </div>
-                    <button>
-                      <span>Buy</span>
-                      <span>Ticket</span>
-                    </button>
-                  </li>
-                  */}
                 </ul>
               </div>
-              {/*
-              <div className={styles.code}>
-                {
-                  JSON.stringify(raffleList)
-                }
-              </div>
-              */}
             </>
           )
         )}

@@ -251,7 +251,7 @@
   display: inline-flex;
 }
 
-#raffleList ul li div:first-child{
+#raffleList ul li div:first-child {
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -368,10 +368,14 @@
 }
 
 .transactionResult {
-    display: flex;
-    background-color: var(--main-dark-blue);
-    border: 1px solid var(--main-grey);
-    padding: 1rem;
-    border-radius: 1rem;
-    box-shadow: 0 0.1rem 1rem rgba(20, 29, 55, 0.15);
+  position: fixed;
+  top: 12px;
+  color: var(--main-white);
+  display: flex;
+  background-color: var(--main-dark-blue);
+  border: 1px solid var(--main-grey);
+  padding: 0.7rem 1rem;
+  border-radius: 1.3rem;
+  box-shadow: 0 2px 10px rgba(20, 29, 55, 0.5);
+  z-index: 2;
 }
