@@ -30,16 +30,15 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const { query } = router;
-    if (query.transactionHashes) {
-      getTransactionResult(query.transactionHashes)
-        .then((value) => setTransactionResult({ value: value }))
-        .catch((error) => console.error("error", error));
-    }
-  }, []);
-
-  useEffect(() => {
     if (!isStartingUp) {
+      const { query } = router;
+      console.log("query", query);
+      if (query.transactionHashes) {
+        console.log("query", query.transactionHashes);
+        getTransactionResult(query.transactionHashes)
+          .then((value) => setTransactionResult({ value: value }))
+          .catch((error) => console.error("error", error));
+      }
       getRaffleList()
         .then((data) => {
           const raffleData = data.map(([hash, item]) => item);
@@ -49,7 +48,7 @@ export default function Home() {
           console.error(error);
         });
     }
-  }, [isStartingUp]);
+  }, [isStartingUp, router]);
 
   const handleLogin = () => {
     signIn();
@@ -62,12 +61,12 @@ export default function Home() {
   const handleCreateRaffle = (e) => {
     e.preventDefault();
     const createRaffleArgs = {
-      description: "test raffle",
-      min_entry_price: formData.min_entry_price,
-      min_participants: formData.min_participants,
+      description: formData.description,
+      min_entry_price: parseInt(formData.min_entry_price),
+      min_participants: parseInt(formData.min_participants),
       prize: formData.prize,
-      nft_account: "",
-      open_days: 1,
+      nft_account: formData.nft_account,
+      open_days: parseInt(formData.open_days),
     };
     createRaffle(createRaffleArgs)
       .then((data) => {
@@ -84,7 +83,11 @@ export default function Home() {
       walletToUse: wallet,
       min_entry_prize: min_entry_prize.toString(),
     });
-    return raffleContract.participate();
+    try {
+      raffleContract.participate();
+    } catch (error) {
+      console.log("error at participate", error);
+    }
   };
 
   return (
