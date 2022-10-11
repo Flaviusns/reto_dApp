@@ -289,6 +289,20 @@ export default function Home() {
                   yout ticket.
                 </p>
                 <ul>
+                  <li>
+                    <div>Nuevo Raffle</div>
+                    <div>
+                      <span>Minimum of participants:</span>5
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleParticipate("dev-1665423540034-14670949817966", 1)
+                      }
+                    >
+                      <span>Buy</span>
+                      <span>Ticket</span>
+                    </button>
+                  </li>
                   {raffleList.map((item, i) => (
                     <li key={i}>
                       <div>{item.description}</div>
@@ -306,21 +320,6 @@ export default function Home() {
                       </button>
                     </li>
                   ))}
-                    <li>
-                        <div>Nuevo Raffle</div>
-                        <div>
-                            <span>Minimum of participants:</span>
-                            5
-                        </div>
-                        <button
-                            onClick={() =>
-                            handleParticipate("dev-1665423540034-14670949817966", 1)
-                            }
-                        >
-                            <span>Buy</span>
-                            <span>Ticket</span>
-                        </button>
-                    </li>
                 </ul>
               </div>
             </>
@@ -331,10 +330,7 @@ export default function Home() {
       <footer className={styles.footer}>
         <p>
           Powered by the
-          <a
-            href="https://platzi.com/blog/animate-a-aprender-de-desarrollo-blockchain-y-aplica-a-una-de-las-100-becas-con-near-hispano/"
-            target="_blank"
-          >
+          <a href="https://platzi.com/cursos/near-program/" target="_blank">
             NEAR Developer Program
           </a>{" "}
           of Platzi
