@@ -286,13 +286,13 @@ export default function Home() {
                 <h2 className={styles.subtitle}>Explore active Charitaffles</h2>
                 <p>
                   Search for the cause/prize you want to participate for and buy
-                  yout ticket.
+                  your ticket.
                 </p>
                 <ul>
                   <li>
                     <div>Nuevo Raffle</div>
                     <div>
-                      <span>Minimum of participants:</span>5
+                      <span>Minimum entry price:</span>1
                     </div>
                     <button
                       onClick={() =>
@@ -307,8 +307,8 @@ export default function Home() {
                     <li key={i}>
                       <div>{item.description}</div>
                       <div>
-                        <span>Minimum of participants:</span>
-                        {item.min_participants}
+                        <span>Minimum entry price:</span>
+                        {item.min_entry_price}
                       </div>
                       <button
                         onClick={() =>

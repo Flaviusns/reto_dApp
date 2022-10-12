@@ -262,11 +262,11 @@
 #raffleList ul li div span:first-child {
   font-size: 0;
   color: transparent;
-  background-image: url(../public/icon-participants.png);
+  background-image: url(../public/icon_nm.svg);
   background-size: cover;
-  width: 1rem;
-  height: 1rem;
-  margin-right: 3px;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 5px;
 }
 
 #raffleList ul li button {
@@ -378,4 +378,5 @@
   border-radius: 1.3rem;
   box-shadow: 0 2px 10px rgba(20, 29, 55, 0.5);
   z-index: 2;
+
 }
