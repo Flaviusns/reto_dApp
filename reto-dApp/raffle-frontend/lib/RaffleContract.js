@@ -1,28 +1,20 @@
-import nearWallet from "../lib/near-wallet";
+import { utils } from 'near-api-js';
 
-const CONTRACT_ID = "dev-1664448823156-51379824713049"
-
-class RaffleContract {
+export class RaffleContract {
     contractId;
     wallet;
+    min_entry_prize;
 
-    constructor({ contractId, walletToUse }) {
+    constructor({ contractId, walletToUse, min_entry_prize }) {
       this.contractId = contractId;
-      this.wallet = walletToUse;    
+      this.wallet = walletToUse;
+      this.min_entry_prize = min_entry_prize;
     }
   
-    getRaffleList = async () => {
-      return await this.wallet.viewMethod({ contractId: this.contractId, method: 'get_list_raffle' });
-    }
-  
-    createRaffle = async (min_entry_price, min_participants, prize) => {
-        const methodArgs = {
-            min_entry_price, 
-            min_participants, 
-            prize
-        }
-      return await this.wallet.callMethod({ contractId: this.contractId, method: 'create_raffle', args: methodArgs });
+    participate = async () => {
+      const amountInYocto = utils.format.parseNearAmount(this.min_entry_prize);
+      return await this.wallet.callMethod({ contractId: this.contractId, method: 'participate', args: {}, deposit: amountInYocto });
     }
 }
 
-export const raffleContract = new RaffleContract({contractId: CONTRACT_ID, walletToUse: nearWallet});
+// export const raffleContract = new RaffleContract({contractId: CONTRACT_ID, walletToUse: nearWallet});

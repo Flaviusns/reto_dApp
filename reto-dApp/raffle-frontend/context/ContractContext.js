@@ -1,12 +1,12 @@
 import { createContext, useContext } from "react";
-import { raffleContract } from "../lib/RaffleContract";
+import { raffleManagerContract } from "../lib/RaffleManagerContract";
 
 const ContractContext = createContext()
 
 export const ContractProvider = ({ children }) => {
 
     return (
-        <ContractContext.Provider value={raffleContract}>
+        <ContractContext.Provider value={raffleManagerContract}>
             {children}
         </ContractContext.Provider>
     )

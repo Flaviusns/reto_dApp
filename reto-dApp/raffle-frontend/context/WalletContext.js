@@ -23,7 +23,9 @@ export const WalletProvider = ({ children }) => {
         isStartingUp: isStartingUp,
         signIn: () => nearWallet.signIn(),
         signOut: () => nearWallet.signOut(),
+        getTransactionResult: nearWallet.getTransactionResult,
         userId: userId,
+        wallet: nearWallet,
     }
     return (
         <WalletContext.Provider value={value}>
